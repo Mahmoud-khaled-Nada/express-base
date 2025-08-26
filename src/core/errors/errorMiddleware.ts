@@ -12,7 +12,7 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   const payload = {
     ok: false,
     code: isAppErr ? err.code : "ERR_INTERNAL",
-    message: isAppErr ? err.message : "Internal Server Error"
+    message: isAppErr ? err.message : "Internal Server Error",
   };
   if (!isAppErr) {
     logger.error({ err }, "Unhandled error");

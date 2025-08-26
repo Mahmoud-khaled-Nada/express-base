@@ -1,4 +1,4 @@
-import { notificationConfig } from "../../config/notification";
+import { notificationConfig } from "@config/notification";
 import sgMail from "@sendgrid/mail";
 
 export class EmailService {
