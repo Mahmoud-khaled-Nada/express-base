@@ -1,5 +1,5 @@
 import { Server as IOServer, Socket } from "socket.io";
-import { logger } from "../../core/logger.js";
+import { logger } from "../../core/logger";
 import { Server as HTTPServer } from "http";
 
 let io: IOServer | null = null;

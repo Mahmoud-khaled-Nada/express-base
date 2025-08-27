@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
-import { logger } from "../../core/logger.js";
+import { logger } from "../../core/logger";
 import { Server } from "http";
 
 const clients = new Set<WebSocket>();

@@ -14,16 +14,16 @@ async function start() {
   if (redis) redis.on("connect", () => logger.info("Redis connected"));
 
   // Start HTTP if needed
-  // if (Env.role === "http" || Env.role === "both") {
-  //   httpServer = startHttp();
-  // }
+  if (Env.role === "http" || Env.role === "both") {
+    httpServer = startHttp();
+  }
 }
 
 async function stop() {
   // Stop HTTP if needed
   //stopHttp(); // ws
 
-  // httpServer?.close();
+  httpServer?.close();
 
   // databases
   await disconnectRedis();

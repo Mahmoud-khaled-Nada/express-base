@@ -1,62 +1,74 @@
 import { Request, Response, NextFunction } from "express";
-import { CreateUser } from "./user.schema.js";
-import { UserService } from "./user.service.js";
-import { AppError } from "../../core/errors/AppError.js";
+import { Env } from "@/config/env";
+import { User } from "./user.model";
+import { createApiResponse } from "@/shared/util";
+import { transformUserToResponse, USER_ROLES } from "./user.schema";
 
-
-// import { EventBus } from "../../infra/events/eventBus.js";
-// import { Channels } from "../../infra/events/event.types.js";
-
-// // ...after user creation:
-// EventBus.emit(Channels.USER_CREATED, {
-//   userId: user.id,
-//   email: user.email,
-//   name: user.name,
-//   at: Date.now()
-// });
-
-// // Fire a notification event (the bridge will send email/SMS + store it)
-// EventBus.emit(Channels.NOTIFY_SEND, {
-//   userId: user.id,
-//   channel: "email",
-//   to: user.email,
-//   subject: "Welcome!",
-//   message: `<h1>Hi ${user.name}</h1><p>Welcome aboard.</p>`
-// });
-
-
-
-// import { dispatch } from "../infra/jobs/api.js";
-
-// await dispatch("SendWelcomeEmail", { userId: user.id, email: user.email, name: user.name }, {
-//   delayMs: 5000,
-//   attempts: 8,
-//   backoff: { type: "exponential", baseMs: 2000, factor: 2, maxMs: 60000 },
-//   idempotencyKey: `welcome:${user.id}`
-// });
-
-
-// dispatch("SomeJob", data, { delayMs: 10_000 });
-
-export async function createUser(req: Request, res: Response, next: NextFunction) {
+export async function register(req: Request, res: Response, next: NextFunction) {
   try {
-    const parsed = CreateUser.safeParse(req.body);
-    if (!parsed.success) throw AppError.badRequest("Invalid user input", parsed.error.format());
-    const user = await UserService.create(parsed.data);
-    res.status(201).json({ ok: true, data: user });
-  } catch (e) { next(e); }
-}
+    // At this point, validation has already been done by middleware
+    // The request body is guaranteed to be valid according to the schema
+    const { email, password, name, title, photo, roles, registration_token } = req.body;
 
-export async function listUsers(_req: Request, res: Response, next: NextFunction) {
-  try {
-    const users = await UserService.list();
-    res.json({ ok: true, data: users });
-  } catch (e) { next(e); }
-}
+    console.log( req.body)
 
-export async function getUser(_req: Request, res: Response, next: NextFunction) {
-  try {
-    const users = await UserService.list();
-    res.json({ ok: true, data: users });
-  } catch (e) { next(e); }
+    // Check if user already exists
+    const existingUser = await User.findOne({
+      email: email.toLowerCase(),
+      deleted: false,
+    });
+
+    if (existingUser) {
+      return res.status(409).json(createApiResponse(false, "User with this email already exists"));
+    }
+
+    // Create new user
+    const newUser = new User({
+      name: name.trim(),
+      email: email.toLowerCase(),
+      password, // Will be hashed by pre-save hook
+      title,
+      photo,
+      roles: roles || [USER_ROLES.USER],
+      is_admin: roles[0].code == 1 ? true : false,
+      deleted: false,
+      suspended: false,
+      registration_token,
+      last_op: new Date(),
+    });
+
+    // Save user (password will be hashed automatically)
+    await newUser.save();
+
+    // Generate JWT token
+    await newUser.generateToken();
+
+    // Transform user data for response (removes password and sensitive fields)
+    const userResponse = transformUserToResponse(newUser);
+
+    return res.status(201).json(
+      createApiResponse(true, "User registered successfully", {
+        user: userResponse,
+        token: newUser.token,
+        expiresIn: Number(Env.tokenExpirationTimeInSeconds),
+      })
+    );
+  } catch (error: any) {
+    console.error("Registration error:", error);
+
+    // Handle MongoDB duplicate key error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0] || "field";
+      return res.status(409).json(createApiResponse(false, `${field} already exists`));
+    }
+
+    // Handle Mongoose validation errors
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err: any) => err.message);
+      return res.status(400).json(createApiResponse(false, "Validation failed", null, errors));
+    }
+
+    // Handle other errors
+    return res.status(500).json(createApiResponse(false, "Registration failed", null, [error.message]));
+  }
 }

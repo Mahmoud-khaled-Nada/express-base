@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { register } from "../observability/metrics.js";
+import { register } from "../observability/metrics";
+import { Env } from "@/config/env";
 
 export const health = Router();
 health.get("/healthz", (_req, res) => res.json({ ok: true }));

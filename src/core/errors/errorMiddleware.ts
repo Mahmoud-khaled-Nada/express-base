@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { AppError } from "./AppError.js";
-import { logger } from "../logger.js";
+import { AppError } from "./AppError";
+import { logger } from "../logger";
 
 export function notFoundHandler(_req: Request, _res: Response, next: NextFunction) {
   next(AppError.notFound("Route not found"));

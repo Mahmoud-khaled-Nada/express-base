@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { Env } from "../../config/env.js";
-import { logger } from "../../core/logger.js";
+import { Env } from "@config/env";
+import { logger } from "@core/logger";
 
 export async function connectMongo() {
   if (!Env.mongoUri) return;

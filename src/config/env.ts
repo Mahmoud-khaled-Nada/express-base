@@ -10,6 +10,10 @@ export const Env = {
   role: (process.env.ROLE ?? "http") as "http" | "worker" | "both",
   port: Number(process.env.PORT ?? 3000),
 
+
+  secret: process.env.SECRET || "secret",
+  tokenExpirationTimeInSeconds: process.env.TOKEN_EXPIRATION_TIME_IN_SECONDS || "3600",
+
   corsOrigin: process.env.CORS_ORIGIN ?? "*",
   rateWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 60_000),
   rateMax: Number(process.env.RATE_LIMIT_MAX ?? 100),

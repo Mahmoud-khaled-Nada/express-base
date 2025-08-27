@@ -1,6 +1,6 @@
 import { Kafka, Consumer, Producer, EachMessagePayload } from "kafkajs";
-import { Env } from "../../config/env.js";
-import { logger } from "../../core/logger.js";
+import { Env } from "../../config/env";
+import { logger } from "../../core/logger";
 
 interface KafkaClient {
   kafka: Kafka | null;

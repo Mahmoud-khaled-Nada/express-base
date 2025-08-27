@@ -1,8 +1,8 @@
-import { buildApp } from "./app.js";
-import { Env } from "./config/env.js";
-import { logger } from "./core/logger.js";
-import { initSocketIO, stopSocketIO } from "@infra/socketio/socketServer.js";
-import { initWebSocket, stopWebSocket } from "@infra/websocket/wsServer.js";
+import { buildApp } from "./app";
+import { Env } from "./config/env";
+import { logger } from "./core/logger";
+import { initSocketIO, stopSocketIO } from "@infra/socketio/socketServer";
+import { initWebSocket, stopWebSocket } from "@infra/websocket/wsServer";
 
 let wss: ReturnType<typeof initWebSocket> | null = null;
 let socketServer: ReturnType<typeof initSocketIO> | null = null;

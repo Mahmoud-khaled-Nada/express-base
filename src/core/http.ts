@@ -5,11 +5,12 @@ import hpp from "hpp";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
-import { Env } from "../config/env.js";
+import { Env } from "../config/env";
 
 export const createHttp = () => {
   const app = express();
-  app.set("trust proxy", true);
+  // app.set("trust proxy", true);
+   app.set('trust proxy', false);
   app.use(helmet());
   app.use(cors({ origin: Env.corsOrigin, credentials: true }));
   app.use(hpp());
